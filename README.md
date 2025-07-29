@@ -1,6 +1,3 @@
-# backend
-law-project-backend
-
 <h1> 📘 업무 공유 사항 </h1>
 <ui>
   <li> JwtFilter, JwtUtil </li>
