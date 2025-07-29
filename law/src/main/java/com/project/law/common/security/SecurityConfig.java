@@ -1,5 +1,6 @@
-package com.project.law.config.security;
+package com.project.law.common.security;
 
+import com.project.law.common.util.UrlFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -35,7 +36,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http,
+    public SecurityFilterChain securityFilterChain(HttpSecurity http,
                                                           AuthenticationManager authenticationManager) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
@@ -51,8 +52,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(request -> {
                     if (true) {
                         request
-//                                .requestMatchers(CUSTOM_AND_JWT_EXCLUDE_URL).permitAll()
-                                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/api-docs/**").permitAll()
+                                .requestMatchers(UrlFilter.getSecurityFilterPassPath()).permitAll()
+//                                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/api-docs/**").permitAll()
                                 .anyRequest().authenticated();
                     } else {
                         request.anyRequest().permitAll();
