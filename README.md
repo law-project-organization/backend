@@ -15,6 +15,6 @@
   <li>  EC2 인스턴스 (프리티어) 생성 후 기본 세팅 (TLS, 무료 도메인, DB, Spring Boot) + Github Actions CI/CD 파이프라인 구축 </li>
 </ui>
 
-<h1> 현재 프로젝트 구조</h1>
+<h1> 🖥️ 현재 프로젝트 구조</h1>
 <img width="354" height="838" alt="image" src="https://github.com/user-attachments/assets/a86092df-8ea3-4a8d-a2db-c069e0647e98" />
 
