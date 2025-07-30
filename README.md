@@ -15,50 +15,6 @@
   <li>  EC2 인스턴스 (프리티어) 생성 후 기본 세팅 (TLS, 무료 도메인, DB, Spring Boot) + Github Actions CI/CD 파이프라인 구축 </li>
 </ui>
 
+<h1> 현재 프로젝트 구조</h1>
+<img width="354" height="838" alt="image" src="https://github.com/user-attachments/assets/a86092df-8ea3-4a8d-a2db-c069e0647e98" />
 
-├─.gradle
-│  ├─8.14.3
-│  │  ├─checksums
-│  │  ├─executionHistory
-│  │  ├─expanded
-│  │  ├─fileChanges
-│  │  ├─fileHashes
-│  │  └─vcsMetadata
-│  ├─buildOutputCleanup
-│  └─vcs-1
-├─.idea
-├─gradle
-│  └─wrapper
-└─src
-    ├─main
-    │  ├─java
-    │  │  └─com
-    │  │      └─project
-    │  │          └─law
-    │  │              ├─common
-    │  │              │  ├─enums
-    │  │              │  ├─exception
-    │  │              │  ├─filter
-    │  │              │  ├─redis
-    │  │              │  ├─security
-    │  │              │  ├─util
-    │  │              │  └─websocket
-    │  │              └─domain
-    │  │                  ├─base
-    │  │                  │  └─entity
-    │  │                  ├─post
-    │  │                  └─user
-    │  │                      ├─controller
-    │  │                      ├─dto
-    │  │                      │  ├─request
-    │  │                      │  └─response
-    │  │                      ├─entity
-    │  │                      ├─enums
-    │  │                      ├─repository
-    │  │                      └─service
-    │  └─resources
-    └─test
-        └─java
-            └─com
-                └─project
-                    └─law
