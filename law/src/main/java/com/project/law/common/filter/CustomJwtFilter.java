@@ -50,7 +50,11 @@ public class CustomJwtFilter extends OncePerRequestFilter { // OncePerRequestFil
             filterChain.doFilter(request, response);
             return;
         }
+
+        // Bearer 접두어 분리
         String token = bearerToken.substring(7);
+
+        // 유효성 검사
         if(jwtUtil.isExpired(token)){
             log.info("[JwtFilter] JwtToken Is Expired");
 

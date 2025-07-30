@@ -43,8 +43,8 @@ public class CustomLogoutFilter extends GenericFilterBean {
 
         String userId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
         log.info("logout userId : {}", userId);
-        
-        // 만약 로그인된 유저가 아니면 예외 처리
+
+        // 만약 로그인된 유저가 아니면 예외 처리 / 로그인 된 유저는 해당 없음
         if(redisTemplate.delete(jwtUtil.toRedisRefreshTokenKey(userId))){
             httpServletResponse.setContentType(MediaType.APPLICATION_JSON_VALUE);
             
@@ -53,5 +53,7 @@ public class CustomLogoutFilter extends GenericFilterBean {
             printWriter.print("Not Logged In User");
             printWriter.close();
         }
+
+        httpServletResponse.setStatus(204);
     }
 }
