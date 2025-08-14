@@ -51,6 +51,14 @@ kakao:
   redirect:
     uri: http://localhost:8080/oauth/kakao/verify-token
 
+naver:
+  code: code
+  client:
+    id: client-id
+  state: state
+  redirect:
+    uri: redirect-uri
+
 cloud:
   aws:
     credentials:
