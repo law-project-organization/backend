@@ -70,3 +70,8 @@ dependencies {
 tasks.named('test') {
 	useJUnitPlatform()
 }
+
+tasks.named('jar'){
+
+}
+

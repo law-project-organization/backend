@@ -11,15 +11,24 @@ spring:
   jackson:
     time-zone: Asia/Seoul
   application:
-    name:laws
+    name: law
   datasource:
     url: jdbc:mysql://localhost:3306/law
     username: root
-    password: gh15617110
+    password: ""
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
+  mail:
+    host: smtp.gmail.com
+    port: 587           # STARTTLS
+    username: your@gmail.com
+    password: your-app-password   # 2단계 인증 + App Password 필수
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+
 
 # swagger
 springdoc:
@@ -49,7 +58,7 @@ kakao:
     id: edda215e7bcfbe5fe5d504c7039fe035
     secret: 7myEWId37nBy6AvZmqTlmP5s1YTCZFRT
   redirect:
-    uri: http://localhost:8080/oauth/kakao/verify-token
+    uri: http://localhost:8080/oauth/kakao/login
 
 naver:
   code: code

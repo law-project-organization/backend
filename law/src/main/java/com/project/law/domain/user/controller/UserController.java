@@ -25,7 +25,9 @@ public class UserController {
     public ResponseEntity<?> getUserInfo(Authentication authentication){
         return userService.getUserInfo(authentication);
     }
-        
+
+
+
     /**
      * 추후 캐싱기능 도입 가능
      * 아래 주석 해제 ( + 업데이트 )

@@ -51,6 +51,7 @@ public class CustomLoginFilter extends AbstractAuthenticationProcessingFilter { 
             super("/api/v1/auth/login");
             setAuthenticationManager(authenticationManager);
 //            super(DEFAULT_ANT_PATH_REQUEST_MATCHER.getPattern());
+            this.setAuthenticationManager(authenticationManager);
             this.jwtUtil = jwtUtil;
             this.cookieUtil = cookieUtil;
             this.authenticationManager = authenticationManager;

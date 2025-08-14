@@ -76,8 +76,8 @@ public class SecurityConfig {
     @Bean
     CorsConfigurationSource corsConfiguration() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOriginPatterns(List.of("http://localhost:5173",
-                "https://law-project-frontend.netlify.app/"));
+        config.setAllowedOriginPatterns(List.of("http://localhost:8080",
+                "http://localhost:8080"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE","OPTIONS"));
         config.setAllowCredentials(true);
         config.setExposedHeaders(Collections.singletonList("*")); // 개발용
