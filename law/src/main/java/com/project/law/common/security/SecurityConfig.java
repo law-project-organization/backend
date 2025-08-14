@@ -1,8 +1,17 @@
 package com.project.law.common.security;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.project.law.common.filter.CustomJwtFilter;
+import com.project.law.common.filter.CustomLoginFilter;
+import com.project.law.common.filter.CustomLogoutFilter;
+import com.project.law.common.util.CookieUtil;
+import com.project.law.common.util.JwtUtil;
 import com.project.law.common.util.UrlFilter;
+import com.project.law.domain.user.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -10,8 +19,9 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -21,14 +31,15 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
-//    private final TokenProvider tokenProvider;
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+    private final JwtUtil jwtUtil;
+    private final CookieUtil cookieUtil;
+    private final UserRepository userRepository;
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final StringRedisTemplate stringRedisTemplate;
+    private final ObjectMapper objectMapper;
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
@@ -45,9 +56,9 @@ public class SecurityConfig {
                 .headers((e) -> e.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin))
                 .cors(cors -> cors.configurationSource(corsConfiguration()))
 
-//                .addFilterBefore(new UrlFillter(), UsernamePasswordAuthenticationFilter.class)
-//                .addFilterBefore(new JwtFilter(tokenProvider, filter), UsernamePasswordAuthenticationFilter.class)
-                .oauth2Login(AbstractHttpConfigurer::disable)
+                .addFilterBefore(new CustomJwtFilter(jwtUtil, cookieUtil), UsernamePasswordAuthenticationFilter.class)
+                .addFilterAt(new CustomLoginFilter(authenticationManager, jwtUtil, cookieUtil ,bCryptPasswordEncoder, stringRedisTemplate, userRepository, objectMapper), UsernamePasswordAuthenticationFilter.class)
+                .addFilterAt(new CustomLogoutFilter(stringRedisTemplate, jwtUtil, cookieUtil), LogoutFilter.class)
 
                 .authorizeHttpRequests(request -> {
                     if (true) {
@@ -65,8 +76,8 @@ public class SecurityConfig {
     @Bean
     CorsConfigurationSource corsConfiguration() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOriginPatterns(List.of("http://localhost:8080",
-                "http://localhost:8080"));
+        config.setAllowedOriginPatterns(List.of("http://localhost:5173",
+                "https://law-project-frontend.netlify.app/"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE","OPTIONS"));
         config.setAllowCredentials(true);
         config.setExposedHeaders(Collections.singletonList("*")); // 개발용

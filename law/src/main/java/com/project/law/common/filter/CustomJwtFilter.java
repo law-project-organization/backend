@@ -9,10 +9,10 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -20,15 +20,16 @@ import java.io.PrintWriter;
 import java.util.Collections;
 
 @Slf4j
-@Component
 public class CustomJwtFilter extends OncePerRequestFilter { // OncePerRequestFilter를 쓰고 GenericFilterBean을 쓰는 이유 : Redirect 시에 중복 호출 방지
 
     /** 필드 **/
     private final JwtUtil jwtUtil;
+    private final CookieUtil cookieUtil;
 
     /** 생성자 **/
-    public CustomJwtFilter(JwtUtil jwtUtil) {
+    public CustomJwtFilter(JwtUtil jwtUtil, CookieUtil cookieUtil) {
         this.jwtUtil = jwtUtil;
+        this.cookieUtil = cookieUtil;
     }
 
 
@@ -44,7 +45,7 @@ public class CustomJwtFilter extends OncePerRequestFilter { // OncePerRequestFil
         }
 
         // accessToken 검증
-        String bearerToken = CookieUtil.getAuthToken(request);
+        String bearerToken = cookieUtil.getAuthToken(request);
         if(bearerToken == null || !bearerToken.startsWith("Bearer ")){
             log.info("[JwtFilter] bearerToken is Null or bearerToken Not Start With Bearer");
             filterChain.doFilter(request, response);
@@ -59,7 +60,7 @@ public class CustomJwtFilter extends OncePerRequestFilter { // OncePerRequestFil
             log.info("[JwtFilter] JwtToken Is Expired");
 
             response.setStatus(401);
-            response.setContentType("application/json");
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
             PrintWriter writer = response.getWriter();
             writer.print("Access Token Is Expired");
             return;

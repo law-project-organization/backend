@@ -1,0 +1,70 @@
+server:
+  port: 8080
+  url:
+
+local:
+  port: 8080
+  url: http://localhost:8080
+
+
+spring:
+  jackson:
+    time-zone: Asia/Seoul
+  application:
+    name:laws
+  datasource:
+    url: jdbc:mysql://localhost:3306/law
+    username: root
+    password: gh15617110
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+# swagger
+springdoc:
+  api-docs:
+    #    path: /v3/api-docs
+    groups:
+      enabled: true
+  swagger-ui:
+    path: /swagger # ?? ??? ?? ? swagger ?? ?? ???
+    #    config-url: /v3/api-docs/swagger-config
+    #    url: /v3/api-docs
+    enabled: true
+    groups-order: asc
+    tags-sorter: alpha
+    operations-sorter: alpha
+    display-request-duration: true
+    doc-expansion: none
+#    disable-swagger-default-url: true
+
+#mail url
+mail:
+  redirect:
+    url: http://localhost:8080
+
+kakao:
+  client:
+    id: edda215e7bcfbe5fe5d504c7039fe035
+    secret: 7myEWId37nBy6AvZmqTlmP5s1YTCZFRT
+  redirect:
+    uri: http://localhost:8080/oauth/kakao/verify-token
+
+cloud:
+  aws:
+    credentials:
+      access-key: YOUR_AWS_ACCESS_KEY
+      secret-key: YOUR_AWS_SECRET_KEY
+    region:
+      static: ap-northeast-2 # ??
+    stack:
+      auto: false
+
+s3:
+  bucket: your-bucket-name
+
+
+logging:
+  charset:
+    console: UTF-8

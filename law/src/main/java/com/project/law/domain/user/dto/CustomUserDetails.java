@@ -17,18 +17,17 @@ public class CustomUserDetails implements UserDetails {
         return user.getId();
     }
 
-    @Override
-    public String getUsername(){
-        return user.getUsername();
-    }
-
     public String getRole(){
         return String.valueOf(user.getRole());
     }
 
+    public String getEmail(){
+        return user.getEmail();
+    }
+
     @Override
     public String getPassword() {
-        return null;
+        return user.getPassword();
 //                user.getPassword();
     }
 
@@ -38,6 +37,13 @@ public class CustomUserDetails implements UserDetails {
     /**
      * 사용하지 않는 메소드
      * **/
+
+
+    @Override
+    public String getUsername(){
+        return "";
+    }
+
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

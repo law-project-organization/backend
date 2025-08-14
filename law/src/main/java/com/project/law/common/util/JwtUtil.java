@@ -2,7 +2,6 @@ package com.project.law.common.util;
 
 import com.project.law.common.enums.JwtTokenType;
 import io.jsonwebtoken.Jwts;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;

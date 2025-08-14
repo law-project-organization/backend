@@ -7,7 +7,6 @@ import com.project.law.domain.user.dto.response.KakaoTokenResponse;
 import com.project.law.domain.user.dto.response.KakaoUserResponse;
 import com.project.law.domain.user.entity.KakaoOauth;
 import com.project.law.domain.user.entity.User;
-import com.project.law.domain.user.enums.UserRole;
 import com.project.law.domain.user.repository.KakaoOauthRepository;
 import com.project.law.domain.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletResponse;
@@ -31,7 +30,7 @@ import java.util.Optional;
 @Service
 //@RequiredArgsConstructor
 @Slf4j
-public class KakaoAuthService {
+public class KakaoOauthService {
 
     @Value("${kakao.client.id}")
     private String clientId ;
@@ -40,20 +39,22 @@ public class KakaoAuthService {
     @Value("${kakao.client.secret}")
     String clientSecret;
     private final WebClient kakaoOauthWebClient;
-    private final RestTemplate restTemplate;
+    private final RestTemplate customRestTemplate;
     private final JwtUtil jwtUtil;
+    private final CookieUtil cookieUtil;
     private final KakaoOauthRepository kakaoOauthRepository;
     private final UserRepository userRepository;
 
-    public KakaoAuthService(@Qualifier("kakaoOauthWebClient") WebClient kakaoOauthWebClient,
-//                                @Qualifier("kakaoOauthRestTemplate") RestTemplate restTemplate,
-                            RestTemplate restTemplate,
-                            JwtUtil jwtUtil,
-                            KakaoOauthRepository kakaoOauthRepository,
-                            UserRepository userRepository){
+    public KakaoOauthService(@Qualifier("kakaoOauthWebClient") WebClient kakaoOauthWebClient,
+                             @Qualifier("customRestTemplate") RestTemplate customRestTemplate,
+                             JwtUtil jwtUtil,
+                             CookieUtil cookieUtil,
+                             KakaoOauthRepository kakaoOauthRepository,
+                             UserRepository userRepository){
         this.kakaoOauthWebClient = kakaoOauthWebClient;
-        this.restTemplate = restTemplate;
+        this.customRestTemplate = customRestTemplate;
         this.jwtUtil = jwtUtil;
+        this.cookieUtil = cookieUtil;
         this.kakaoOauthRepository = kakaoOauthRepository;
         this.userRepository = userRepository;
     }
@@ -168,7 +169,7 @@ public class KakaoAuthService {
 
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
 
-        return restTemplate.postForObject(url, request, KakaoTokenResponse.class);
+        return customRestTemplate.postForObject(url, request, KakaoTokenResponse.class);
 //        return kakaoOauthWebClient.post()
 //                .uri(uriBuilder -> uriBuilder
 //                        .path("/oauth/token")
@@ -197,7 +198,7 @@ public class KakaoAuthService {
 
         HttpEntity<HttpHeaders> request = new HttpEntity<>(headers);
 
-        return restTemplate.postForObject(url, request, KakaoUserResponse.class);
+        return customRestTemplate.postForObject(url, request, KakaoUserResponse.class);
 
 //        return WebClient.create("https://kapi.kakao.com")
 //                .get()
@@ -219,9 +220,10 @@ public class KakaoAuthService {
         String refreshToken = jwtUtil.generateRefreshToken(userId, userRole);
         log.info("accessToken : {}, refreshToken : {}", accessToken, refreshToken);
 
+
         // 쿠키에 토큰 추가
-        httpServletResponse.addCookie(CookieUtil.generateAccessTokenCookie(accessToken));
-        httpServletResponse.addCookie(CookieUtil.generateRefreshTokenCookie(refreshToken));
+        httpServletResponse.addCookie(cookieUtil.generateNewAccessTokenCookie(accessToken));
+        httpServletResponse.addCookie(cookieUtil.generateNewRefreshTokenCookie(refreshToken));
         log.info("jwt token is put in cookie");
     }
 

@@ -24,12 +24,10 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 import org.springframework.security.web.util.matcher.RequestMatcher;
-import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 
-@Component
 @Slf4j
 public class CustomLoginFilter extends AbstractAuthenticationProcessingFilter { // LoginFilter의 SuperClass
 
@@ -39,6 +37,7 @@ public class CustomLoginFilter extends AbstractAuthenticationProcessingFilter { 
         private boolean postOnly = true;
         private final AuthenticationManager authenticationManager;
         private final JwtUtil jwtUtil;
+        private final CookieUtil cookieUtil;
         private final BCryptPasswordEncoder encoder;
         private final RedisTemplate<String, String> redisTemplate;
         private final UserRepository userRepository;
@@ -46,11 +45,14 @@ public class CustomLoginFilter extends AbstractAuthenticationProcessingFilter { 
         /** 생성자 */
         public CustomLoginFilter(AuthenticationManager authenticationManager,
                                  JwtUtil jwtUtil,
+                                 CookieUtil cookieUtil,
                                  BCryptPasswordEncoder encoder,
                                  @Qualifier(value = "CustomStringRedisTemplate") StringRedisTemplate redisTemplate, UserRepository userRepository, ObjectMapper objectMapper) {
             super("/api/v1/auth/login");
+            setAuthenticationManager(authenticationManager);
 //            super(DEFAULT_ANT_PATH_REQUEST_MATCHER.getPattern());
             this.jwtUtil = jwtUtil;
+            this.cookieUtil = cookieUtil;
             this.authenticationManager = authenticationManager;
             this.encoder = encoder;
             this.redisTemplate = redisTemplate;
@@ -64,7 +66,7 @@ public class CustomLoginFilter extends AbstractAuthenticationProcessingFilter { 
             /** 로그인 요청 경로 검증 **/
 
             if (this.postOnly && !request.getMethod().equalsIgnoreCase(HttpMethod.POST.name())) {
-                throw new AuthenticationServiceException("지원하지 않는 메소드 : " + request.getMethod());
+                throw new AuthenticationServiceException("Unsupported Method : " + request.getMethod());
             } else {
                 LocalLoginRequestDto loginRequestDTO;
                 try {
@@ -76,13 +78,13 @@ public class CustomLoginFilter extends AbstractAuthenticationProcessingFilter { 
                 }
 
                 /** 유저네임, 비밀번호 획득 **/
-                String username = loginRequestDTO.getUsername();
+                String email = loginRequestDTO.getEmail();
                 String password = loginRequestDTO.getPassword();
-                log.info("username : {}, password : {}", username, password);
+                log.info("email : {}, password : {}", email, password);
                 /** 전처리 **/
                 /** 토큰화 **/
-                UsernamePasswordAuthenticationToken token = UsernamePasswordAuthenticationToken.unauthenticated(username, password);
-                log.info("로그인 요청 username : {}", username);
+                UsernamePasswordAuthenticationToken token = UsernamePasswordAuthenticationToken.unauthenticated(email, password);
+                log.info("Login Requested email : {}", email);
 
                 /** (필요 시)다중 로그인 방지 로직 추가 **/
                 // redis refreshtoken 존재 여부 확인
@@ -95,31 +97,46 @@ public class CustomLoginFilter extends AbstractAuthenticationProcessingFilter { 
 
         /** 로그인 성공 시 **/
         protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
-            log.info("로그인 성공 로직 시작");
+            log.info("Login Success Logic Start");
     
             // 유저 정보 획득 (UsernamePasswordAuthenticationToken이 authResult에 담김)
             CustomUserDetails customUserDetails = (CustomUserDetails) authResult.getPrincipal();
             String userId = customUserDetails.getId();
             String role = customUserDetails.getRole();
+            log.info("userId : {}, role : {}", userId, role );
 
             // jwt token 발급
             String accessToken = jwtUtil.generateAccessToken(userId ,role);
             String refreshToken = jwtUtil.generateRefreshToken(userId, role);
+            log.info("accessToken : {}, \n refreshToken : {}", accessToken, refreshToken);
 
             // refresh token redis 저장 (id_tokenName)
             redisTemplate.opsForValue().set(jwtUtil.toRedisRefreshTokenKey(userId), refreshToken);
+            log.info("Redis Refresh Token Saved Successfully : userId : {}, refreshToken : {}",userId, refreshToken);
 
             // content-type (없어도 자동으로 직렬화 해주긴 합니다 / 명시적인 것을 선호하는 타입)
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            response.setCharacterEncoding("UTF-8");
 
             // jwt token은 cookie에 httponly, secure 적용을 기준으로 개발 했습니다.
-            response.addCookie(CookieUtil.generateAccessTokenCookie(accessToken));
-            response.addCookie(CookieUtil.generateRefreshTokenCookie(accessToken));
+            response.addCookie(cookieUtil.generateNewAccessTokenCookie(accessToken));
+            response.addCookie(cookieUtil.generateNewRefreshTokenCookie(accessToken));
+            response.addCookie(cookieUtil.generateNewIsLoggedInCookie());
+            log.info("Cookie Set Successfully");
+
+            response.setStatus(200);
+
+
+            PrintWriter printWriter = response.getWriter();
+            printWriter.print("{\"success\" : \"true\"}");
+            printWriter.close();
         }
 
         /** 로그인 실패 시 **/
         protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException, ServletException {
-            log.info("로그인 실패 로직 시작");
+            log.info("Login Fail Logic Start");
+
+            response.setStatus(401);
 
             PrintWriter printWriter = response.getWriter();
             printWriter.println("Login Failed, Failed Message For Development");
