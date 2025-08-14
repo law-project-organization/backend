@@ -234,6 +234,8 @@ public class KakaoOauthService {
 
 
 
+
+
     /** 응답 데이터 체크 **/
     public Mono<String> checkResponseData(String code) {
         log.info("kakaoAuthToken : {}", code);
