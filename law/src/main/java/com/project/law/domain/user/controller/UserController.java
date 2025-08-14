@@ -21,4 +21,6 @@ public class UserController {
     public ResponseEntity<?> getUserInfo(Authentication authentication){
         return userService.getUserInfo(authentication);
     }
+
+
 }

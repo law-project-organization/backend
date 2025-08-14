@@ -7,31 +7,28 @@ import com.project.law.domain.user.dto.response.KakaoTokenResponse;
 import com.project.law.domain.user.dto.response.KakaoUserResponse;
 import com.project.law.domain.user.entity.KakaoOauth;
 import com.project.law.domain.user.entity.User;
-import com.project.law.domain.user.enums.UserRole;
 import com.project.law.domain.user.repository.KakaoOauthRepository;
 import com.project.law.domain.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.Disposable;
 import reactor.core.publisher.Mono;
 
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 //@RequiredArgsConstructor
 @Slf4j
-public class KakaoAuthService {
+public class KakaoOauthService {
 
     @Value("${kakao.client.id}")
     private String clientId ;
@@ -40,19 +37,15 @@ public class KakaoAuthService {
     @Value("${kakao.client.secret}")
     String clientSecret;
     private final WebClient kakaoOauthWebClient;
-    private final RestTemplate restTemplate;
     private final JwtUtil jwtUtil;
     private final KakaoOauthRepository kakaoOauthRepository;
     private final UserRepository userRepository;
 
-    public KakaoAuthService(@Qualifier("kakaoOauthWebClient") WebClient kakaoOauthWebClient,
-//                                @Qualifier("kakaoOauthRestTemplate") RestTemplate restTemplate,
-                            RestTemplate restTemplate,
+    public KakaoOauthService(@Qualifier("kakaoOauthWebClient") WebClient kakaoOauthWebClient,
                             JwtUtil jwtUtil,
                             KakaoOauthRepository kakaoOauthRepository,
                             UserRepository userRepository){
         this.kakaoOauthWebClient = kakaoOauthWebClient;
-        this.restTemplate = restTemplate;
         this.jwtUtil = jwtUtil;
         this.kakaoOauthRepository = kakaoOauthRepository;
         this.userRepository = userRepository;
@@ -85,17 +78,15 @@ public class KakaoAuthService {
      * 신규 카카오 회원 가입 시 자체 회원가입 여부 확인 필요
      * **/
     @Transactional
-    public ResponseEntity<?> JoinWithKakaoOauthToken(String code, HttpServletResponse httpServletResponse) {
+    public CompletableFuture<Disposable> JoinWithKakaoOauthToken(String code, HttpServletResponse httpServletResponse) {
         log.info("kakaoAuthToken : {}", code);
 
         // 카카오 토큰 조회
-        KakaoTokenResponse kakaoTokenResponse = fetchToken(code);
-
         // 토큰에서 유저 정보 조회
-        KakaoUserResponse kakaoUserResponse = fetchUserInfo(kakaoTokenResponse.getAccessToken());
-
-        // 유저 정보 추출
-        Long socialOauthId = kakaoUserResponse.getSocialOauthId();
+        return CompletableFuture.completedFuture(fetchToken(code).subscribe(kakaoTokenResponse -> fetchUserInfo(kakaoTokenResponse.getAccessToken()).subscribe(
+            kakaoUserResponse ->{
+                    // 유저 정보 추출
+                    Long socialOauthId = kakaoUserResponse.getSocialOauthId();
         log.info("socialOauthId : {}", socialOauthId);
 
         // 카카오 회원가입 유무에 따른 처리 (socialOauthId, email)
@@ -114,7 +105,6 @@ public class KakaoAuthService {
             // jwt 토큰 발급 및 쿠키 저장
             generateJwtTokenAndPutInCookie(httpServletResponse, userId, userRole);
 
-            return ResponseEntity.ok(null);
         }else {
             // Email 기반 로컬 회원가입 여부 조회
             // 로컬 회원이 있다면 KakaoOauth에 매핑
@@ -147,67 +137,67 @@ public class KakaoAuthService {
             // jwt 토큰 발급 및 쿠키 저장
             generateJwtTokenAndPutInCookie(httpServletResponse, userId, userRole);
 
-            return ResponseEntity.ok(null);
         }
+       } )));
     }
 
     /**
      * 1) 인가 코드를 받아 액세스 토큰으로 교환
      */
-    public KakaoTokenResponse fetchToken(String code) {
-        String url = "https://kauth.kakao.com/oauth/token";
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-
-        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("grant_type", "authorization_code");
-        params.add("client_id", "카카오_앱키");
-        params.add("redirect_uri", "리다이렉트_주소");
-        params.add("code", code);
-
-        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
-
-        return restTemplate.postForObject(url, request, KakaoTokenResponse.class);
-//        return kakaoOauthWebClient.post()
-//                .uri(uriBuilder -> uriBuilder
-//                        .path("/oauth/token")
-//                        .build()
-//                )
-//                .body(BodyInserters.fromFormData("grant_type", "authorization_code")
-//                        .with("client_id", clientId)
-//                        .with("client_secret", clientSecret)
-//                        .with("redirect_uri", redirectUri)
-//                        .with("code", code))
-//                .retrieve()
-//                .bodyToMono(KakaoTokenResponse.class);
+    public Mono<KakaoTokenResponse> fetchToken(String code) {
+//        String url = "https://kauth.kakao.com/oauth/token";
+//
+//        HttpHeaders headers = new HttpHeaders();
+//        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+//
+//        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+//        params.add("grant_type", "authorization_code");
+//        params.add("client_id", "카카오_앱키");
+//        params.add("redirect_uri", "리다이렉트_주소");
+//        params.add("code", code);
+//
+//        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
+//
+//        return restTemplate.postForObject(url, request, KakaoTokenResponse.class);
+        return kakaoOauthWebClient.post()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/oauth/token")
+                        .build()
+                )
+                .body(BodyInserters.fromFormData("grant_type", "authorization_code")
+                        .with("client_id", clientId)
+                        .with("client_secret", clientSecret)
+                        .with("redirect_uri", redirectUri)
+                        .with("code", code))
+                .retrieve()
+                .bodyToMono(KakaoTokenResponse.class);
     }
 
 
     /**
      * 2) 받은 액세스 토큰으로 사용자 정보 조회
      */
-    public KakaoUserResponse fetchUserInfo(String accessToken) { // Mono<KakaoUserResponse>
+    public Mono<KakaoUserResponse> fetchUserInfo(String accessToken) { // Mono<KakaoUserResponse>
 
-        String url = "https://kapi.kakao.com/v2/user/me";
+//        String url = "https://kapi.kakao.com/v2/user/me";
+//
+//        HttpHeaders headers = new HttpHeaders();
+//        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+//        headers.setBearerAuth(accessToken);
+//
+//        HttpEntity<HttpHeaders> request = new HttpEntity<>(headers);
+//
+//        return restTemplate.postForObject(url, request, KakaoUserResponse.class);
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        headers.setBearerAuth(accessToken);
-
-        HttpEntity<HttpHeaders> request = new HttpEntity<>(headers);
-
-        return restTemplate.postForObject(url, request, KakaoUserResponse.class);
-
-//        return WebClient.create("https://kapi.kakao.com")
-//                .get()
-//                .uri(uriBuilder -> uriBuilder
-//                        .path("/v2/user/me")
-//                        .build()
-//                )
-//                .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
-//                .retrieve()
-//                .bodyToMono(KakaoUserResponse.class);
+        return WebClient.create("https://kapi.kakao.com")
+                .get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/v2/user/me")
+                        .build()
+                )
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+                .retrieve()
+                .bodyToMono(KakaoUserResponse.class);
     }
 
     /**

@@ -47,7 +47,6 @@ public class SecurityConfig {
 
 //                .addFilterBefore(new UrlFillter(), UsernamePasswordAuthenticationFilter.class)
 //                .addFilterBefore(new JwtFilter(tokenProvider, filter), UsernamePasswordAuthenticationFilter.class)
-                .oauth2Login(AbstractHttpConfigurer::disable)
 
                 .authorizeHttpRequests(request -> {
                     if (true) {

@@ -1,0 +1,31 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: law
+  datasource:
+    url: jdbc:mysql://localhost:3306/law
+    username: root
+    password: ""
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  mail:
+    host: smtp.gmail.com
+    port: 587           # STARTTLS
+    username: your@gmail.com
+    password: your-app-password   # 2단계 인증 + App Password 필수
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+
+
+kakao:
+  client:
+    id:
+    secret:
+  redirect:
+    uri: http://localhost:8080/oauth/kakao/join
+

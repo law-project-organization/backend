@@ -23,7 +23,7 @@ public class User {
     @Id @Column(name = "user_id")
     private String id;
 
-    @Id @Column(name = "username")
+    @Column(name = "username")
     private String username;
 
     @Column(name = "password")

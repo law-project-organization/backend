@@ -50,6 +50,7 @@ public class CustomLoginFilter extends AbstractAuthenticationProcessingFilter { 
                                  @Qualifier(value = "CustomStringRedisTemplate") StringRedisTemplate redisTemplate, UserRepository userRepository, ObjectMapper objectMapper) {
             super("/api/v1/auth/login");
 //            super(DEFAULT_ANT_PATH_REQUEST_MATCHER.getPattern());
+            this.setAuthenticationManager(authenticationManager);
             this.jwtUtil = jwtUtil;
             this.authenticationManager = authenticationManager;
             this.encoder = encoder;
