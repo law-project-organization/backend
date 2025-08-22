@@ -14,8 +14,8 @@ import org.hibernate.validator.constraints.Length;
 @Valid
 public class LocalLoginRequestDto {
 
-    @Length(min = 4, max = 10)
-    private String username;
+    @Length(min = 4, max = 50)
+    private String email;
 
     @Length(min = 4, max = 8)
     private String password;

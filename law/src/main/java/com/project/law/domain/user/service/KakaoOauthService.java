@@ -38,15 +38,17 @@ public class KakaoOauthService {
     String clientSecret;
     private final WebClient kakaoOauthWebClient;
     private final JwtUtil jwtUtil;
+    private final CookieUtil cookieUtil;
     private final KakaoOauthRepository kakaoOauthRepository;
     private final UserRepository userRepository;
 
     public KakaoOauthService(@Qualifier("kakaoOauthWebClient") WebClient kakaoOauthWebClient,
-                            JwtUtil jwtUtil,
-                            KakaoOauthRepository kakaoOauthRepository,
-                            UserRepository userRepository){
+                             JwtUtil jwtUtil, CookieUtil cookieUtil,
+                             KakaoOauthRepository kakaoOauthRepository,
+                             UserRepository userRepository){
         this.kakaoOauthWebClient = kakaoOauthWebClient;
         this.jwtUtil = jwtUtil;
+        this.cookieUtil = cookieUtil;
         this.kakaoOauthRepository = kakaoOauthRepository;
         this.userRepository = userRepository;
     }
@@ -209,11 +211,14 @@ public class KakaoOauthService {
         String refreshToken = jwtUtil.generateRefreshToken(userId, userRole);
         log.info("accessToken : {}, refreshToken : {}", accessToken, refreshToken);
 
+
         // 쿠키에 토큰 추가
-        httpServletResponse.addCookie(CookieUtil.generateAccessTokenCookie(accessToken));
-        httpServletResponse.addCookie(CookieUtil.generateRefreshTokenCookie(refreshToken));
+        httpServletResponse.addCookie(cookieUtil.generateNewAccessTokenCookie(accessToken));
+        httpServletResponse.addCookie(cookieUtil.generateNewRefreshTokenCookie(refreshToken));
         log.info("jwt token is put in cookie");
     }
+
+
 
 
 

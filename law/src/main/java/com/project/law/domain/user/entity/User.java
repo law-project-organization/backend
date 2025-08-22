@@ -23,15 +23,20 @@ public class User {
     @Id @Column(name = "user_id")
     private String id;
 
-    @Column(name = "username")
-    private String username;
+    @Column(name = "email")
+    private String email;
 
     @Column(name = "password")
     private String password;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(name = "role")
-    private UserRole role;
+    private UserRole role = UserRole.USER;
+
+    @Builder.Default
+    @Column(name = "free_trier_count")
+    private int freeTrierCount = 0;
 
     @Builder.Default
     @Column(name = "delete_yn")

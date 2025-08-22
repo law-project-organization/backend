@@ -20,22 +20,23 @@ import java.util.concurrent.CompletableFuture;
 public class KakaoOauthController {
 
     private final KakaoOauthService kakaoAuthService;
+    private final KakaoOauthService kakaoOauthService;
 
     // XHR 요청 시 직접 redirect 가능
     @GetMapping("/login-url")
     public ResponseEntity<?> getKakaoLoginUrl(){
-        return kakaoAuthService.getKakaoLoginUrl();
+        return kakaoOauthService.getKakaoLoginUrl();
     }
 
     @GetMapping("/join")
     public ResponseEntity<CompletableFuture<Disposable>> JoinWithKakaoOauthToken(@RequestParam("code") String kakaoAuthToken,
-                                                                                 HttpServletResponse httpServletResponse){
+                                                                                 HttpServletResponse httpServletResponse) {
         return new ResponseEntity<>(kakaoAuthService.JoinWithKakaoOauthToken(kakaoAuthToken, httpServletResponse), HttpStatus.CREATED);
     }
 
     @GetMapping("/check-response")
     public Mono<String> checkResponse(@RequestParam("code") String kakaoAuthToken){ // ResponseEntity<?>
-        return kakaoAuthService.checkResponseData(kakaoAuthToken);
+        return kakaoOauthService.checkResponseData(kakaoAuthToken);
     }
 
 }

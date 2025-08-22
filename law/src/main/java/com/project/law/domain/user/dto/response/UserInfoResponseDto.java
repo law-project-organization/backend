@@ -10,13 +10,13 @@ import lombok.*;
 @Builder
 public class UserInfoResponseDto {
 
-    private String username;
+    private String email;
 
     private String role;
 
     public static UserInfoResponseDto toDto(User user){
         return UserInfoResponseDto.builder()
-                .username(user.getUsername())
+                .email(user.getEmail())
                 .role(user.getRole().name())
                 .build();
     }

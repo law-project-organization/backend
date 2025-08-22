@@ -1,8 +1,10 @@
 package com.project.law.common.util;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 @Component
+@Slf4j
 public class UrlFilter {
 
     private static final String[] JWT_FILTER_PASS_PATH = {
@@ -21,13 +23,14 @@ public class UrlFilter {
             "/api-docs/**"
     };
 
-    private static final String LOG_OUT_PATH = "/api/v1/logout";
+    private static final String LOG_OUT_PATH = "/api/v1/auth/logout";
 
     public static String[] getSecurityFilterPassPath(){
         return SECURITY_FILTER_PASS_PATH;
     }
 
     public static boolean checkIfPublicPath(String requestUri){
+        log.info("requestUri : {}", requestUri);
         for(String path : JWT_FILTER_PASS_PATH){
             if(requestUri.startsWith(path)){
                 return true;
