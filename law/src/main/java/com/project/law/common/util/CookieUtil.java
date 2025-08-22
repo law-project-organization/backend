@@ -9,8 +9,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class CookieUtil {
 
-
-
     public static Cookie generateAccessTokenCookie(String accessToken){
         Cookie cookie = new Cookie(JwtTokenType.ACCESS_TOKEN_NAME.getTokenName(), accessToken);
         cookie.setHttpOnly(true);
